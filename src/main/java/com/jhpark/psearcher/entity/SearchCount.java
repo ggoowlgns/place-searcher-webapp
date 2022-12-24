@@ -9,6 +9,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Data @Builder
 @Table("tb_search_count")
 public class SearchCount {
+  @Id @Column("seq")
+  private Integer seq;
+
   @Column("keyword")
   private String keyword;
   @Column("count") @Builder.Default
