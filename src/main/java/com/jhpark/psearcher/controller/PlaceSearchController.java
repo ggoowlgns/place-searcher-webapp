@@ -19,6 +19,20 @@ import java.util.List;
 public class PlaceSearchController {
   private final PlaceSearchService placeSearchService;
 
+  /**
+   * 우선 순위 : 둘 다 포함 > K > N
+   *  - 동일하다 판단하는 기준을 어떻게 잡을지?
+   *  - 구현 : 검색 결과를 표현하는 자료구조 만들기
+   *
+   *  API 검색 조건 :
+   *   - 각각 최대 5개씩,
+   *   - if 한쪽이 5개 이하면, 다른 한쪽에서 더 사용하여 10개 맞춤
+   *
+   *   결과값 생성 조건 :
+   *    - 정렬 우선순위 : 둘다 > K > N
+   * @param query
+   * @return
+   */
   @RequestMapping(path = "/place", method = RequestMethod.GET)
   public Mono<List<String>> queryPlacesByKeyword(@RequestParam("query") String query) {
 
