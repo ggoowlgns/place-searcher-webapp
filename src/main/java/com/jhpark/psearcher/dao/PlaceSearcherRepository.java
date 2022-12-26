@@ -13,8 +13,10 @@ public interface PlaceSearcherRepository extends ReactiveCrudRepository<SearchCo
 
   @Query("UPDATE tb_search_count SET keyword=:keyword, count=:count")
   Mono<Integer> update(String keyword, Integer count);
+
+  @Query("SELECT * FROM tb_search_count WHERE keyword=:keyword FOR UPDATE")
   Mono<SearchCount> findByKeyword(String keyword);
 
-  @Query("SELECT * FROM tb_search_count Order By count limit :n")
+  @Query("SELECT * FROM tb_search_count ORDER BY COUNT DESC LIMIT :n")
   Flux<SearchCount> findTopNOrderByCount(int n);
 }

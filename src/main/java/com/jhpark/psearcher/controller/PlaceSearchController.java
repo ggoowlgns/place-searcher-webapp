@@ -35,7 +35,6 @@ public class PlaceSearchController {
 
   @RequestMapping(path = "/topKeywords", method = RequestMethod.GET)
   public Mono<List<SearchCount>> getTopSearchedKeywords() {
-    //TODO : 상위 랭킹 키워드 응답
     return placeSearchService.getTopKeywords().collectList();
   }
 }

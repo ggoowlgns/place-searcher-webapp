@@ -14,13 +14,12 @@ import reactor.core.publisher.Mono;
 public class PlaceSearchService {
   private final PlaceSearcherRepository placeSearcherRepository;
 
-//  @Transactional
+  @Transactional
   public Mono<SearchCount> countUpSearchedKeyword(String keyword) {
     return placeSearcherRepository.findByKeyword(keyword)
         .flatMap(found -> placeSearcherRepository.save(SearchCount.builder().seq(found.getSeq()).keyword(found.getKeyword()).count(found.getCount()+1).build()))
         .switchIfEmpty(Mono.defer(()-> placeSearcherRepository.save(SearchCount.builder().keyword(keyword).count(1).build())))
         .log();
-
   }
 
   public Flux<SearchCount> getTopKeywords() {
