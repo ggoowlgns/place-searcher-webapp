@@ -14,7 +14,7 @@ public class NaverSearchResponse extends SearchResponse{
   private List<Item> items;
 
   @Data
-  static class Item {
+  public static class Item {
     private String title;
     private String link;
     private String category;

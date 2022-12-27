@@ -21,7 +21,11 @@ public class KakaoSearchDao implements SearchDao{
   @Override
   public Mono<KakaoSearchResponse> searchByKeyword(String keyword) {
     return kakaoWebClient.get()
-        .uri(uriBuilder -> uriBuilder.path("/v2/local/search/keyword").queryParam("query", keyword).build())
+        .uri(uriBuilder ->
+            uriBuilder.path("/v2/local/search/keyword").
+                queryParam("query", keyword).
+                queryParam("size", 10).
+                build())
         .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoRestKey)
         .retrieve().bodyToMono(KakaoSearchResponse.class);
   }

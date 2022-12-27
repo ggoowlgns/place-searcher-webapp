@@ -25,7 +25,7 @@ public class KakaoSearchResponse extends SearchResponse{
   }
 
   @Data
-  static class Document {
+  public static class Document {
     private String id;
     private String place_name;
     private String category_name;

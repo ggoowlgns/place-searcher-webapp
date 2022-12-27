@@ -1,5 +1,6 @@
 package com.jhpark.psearcher.controller;
 
+import com.jhpark.psearcher.domain.Place;
 import com.jhpark.psearcher.entity.SearchCount;
 import com.jhpark.psearcher.service.PlaceSearchService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class PlaceSearchController {
   /**
    * 우선 순위 : 둘 다 포함 > K > N
    *  - 동일하다 판단하는 기준을 어떻게 잡을지?
-   *  - 구현 : 검색 결과를 표현하는 자료구조 만들기
+   *  - 구현 : 검색 결과를 표현하는 자료구조 만들기 :Place
    *
    *  API 검색 조건 :
    *   - 각각 최대 5개씩,
@@ -34,17 +35,13 @@ public class PlaceSearchController {
    * @return
    */
   @RequestMapping(path = "/place", method = RequestMethod.GET)
-  public Mono<List<String>> queryPlacesByKeyword(@RequestParam("query") String query) {
-
-    //TODO : api 호출 & 결과물 산출
-    return placeSearchService.countUpSearchedKeyword(query)
-        .map(searchCount -> {
-          log.info("PlaceSearchController::queryPlacesByKeyword searchCount : {}", searchCount);
-
-          List<String> temp = new ArrayList<>();
-          temp.add(searchCount.toString());
-          return temp;
-        });
+  public Mono<List<Place>> queryPlacesByKeyword(@RequestParam("query") String query) {
+    return placeSearchService.searchPlaceByKeyword(query).
+        flatMap(s -> placeSearchService.countUpSearchedKeyword(query)
+            .map(searchCount -> {
+              log.info("PlaceSearchController::queryPlacesByKeyword searchCount : {}", searchCount);
+              return s;
+            }));
   }
 
   @RequestMapping(path = "/topKeywords", method = RequestMethod.GET)
