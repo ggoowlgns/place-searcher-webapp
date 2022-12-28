@@ -2,10 +2,13 @@ package com.jhpark.psearcher.component.geo; /**
  * 
  */
 
+import lombok.Builder;
+
 /**
  * @author aquilegia
  *
  */
+@Builder
 public class GeoPoint {
 	double x;
 	double y;

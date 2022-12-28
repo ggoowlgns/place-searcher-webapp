@@ -1,9 +1,14 @@
 package com.jhpark.psearcher.domain.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data //https://developers.kakao.com/docs/latest/ko/local/dev-guide#search-by-keyword-response
 public class KakaoSearchResponse extends SearchResponse{
   private Meta meta;
@@ -24,6 +29,10 @@ public class KakaoSearchResponse extends SearchResponse{
     private String selected_region;
   }
 
+
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Data
   public static class Document {
     private String id;

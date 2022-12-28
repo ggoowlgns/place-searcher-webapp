@@ -71,8 +71,8 @@ public class PlaceSearchService {
                           .sorted((o1, o2) -> {
                             boolean o1ExistInNaver = naverPlaces.contains(o1);
                             boolean o2ExistInNaver = naverPlaces.contains(o2);
-                            if (o1ExistInNaver && !o2ExistInNaver) return 1;
-                            else if (!o1ExistInNaver && o2ExistInNaver) return -1;
+                            if (o1ExistInNaver && !o2ExistInNaver) return -1;
+                            else if (!o1ExistInNaver && o2ExistInNaver) return 1;
                             else return 0;
                           }).collect(Collectors.toList());
 

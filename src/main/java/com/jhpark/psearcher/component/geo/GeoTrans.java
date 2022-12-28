@@ -264,6 +264,7 @@ public class GeoTrans {
 		transform(srctype, GEO, out_pt);
 	}
 
+	// result is KM
 	public static double getDistancebyGeo(GeoPoint pt1, GeoPoint pt2) {
 		double lat1 = D2R(pt1.y);
 		double lon1 = D2R(pt1.x);
