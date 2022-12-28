@@ -32,11 +32,11 @@ public class NaverSearchDao implements SearchDao{
         .header("X-Naver-Client-Secret", naverRestClientSecret)
         .retrieve()
         .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
-          log.error("NaverSearchDao::searchByKeyword - keyword : {}", keyword);
+          log.error("NaverSearchDao::searchByKeyword 4xx error - keyword : {}", keyword);
           return Mono.error(new ApiProviderException(SearchApiProvider.NAVER));
         })
         .onStatus(HttpStatus::is5xxServerError, clientResponse -> {
-          log.error("NaverSearchDao::searchByKeyword - keyword : {}", keyword);
+          log.error("NaverSearchDao::searchByKeyword 5xx error - keyword : {}", keyword);
           return Mono.error(new ApiProviderException(SearchApiProvider.NAVER));
         })
         .bodyToMono(NaverSearchResponse.class);

@@ -33,11 +33,11 @@ public class KakaoSearchDao implements SearchDao{
         .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoRestKey)
         .retrieve()
         .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
-          log.error("KakaoSearchDao::searchByKeyword - keyword : {}", keyword);
+          log.error("KakaoSearchDao::searchByKeyword 4xx error - keyword : {}", keyword);
           return Mono.error(new ApiProviderException(SearchApiProvider.KAKAO));
         })
         .onStatus(HttpStatus::is5xxServerError, clientResponse -> {
-          log.error("KakaoSearchDao::searchByKeyword - keyword : {}", keyword);
+          log.error("KakaoSearchDao::searchByKeyword 5xx error - keyword : {}", keyword);
           return Mono.error(new ApiProviderException(SearchApiProvider.KAKAO));
         })
         .bodyToMono(KakaoSearchResponse.class)
