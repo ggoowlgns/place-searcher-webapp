@@ -1,0 +1,10 @@
+# 1) 장소 검색
+GET http://localhost:8080/v1/place?query=은행
+
+<> 2022-12-28T235355.200.json
+###
+
+# 2) 검색 키워드 목록
+GET http://localhost:8080/v1/topKeywords
+
+<> 2022-12-28T235356.200.json

@@ -1,15 +1,19 @@
 package com.jhpark.psearcher.dao;
 
+import com.jhpark.psearcher.domain.enumerator.SearchApiProvider;
+import com.jhpark.psearcher.domain.exception.ApiProviderException;
 import com.jhpark.psearcher.domain.response.KakaoSearchResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Slf4j
 @Repository
 public class KakaoSearchDao implements SearchDao{
   @Qualifier("kakaoWebClient")
@@ -27,6 +31,16 @@ public class KakaoSearchDao implements SearchDao{
                 queryParam("size", 10).
                 build())
         .header(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoRestKey)
-        .retrieve().bodyToMono(KakaoSearchResponse.class);
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
+          log.error("KakaoSearchDao::searchByKeyword 4xx error - keyword : {}", keyword);
+          return Mono.error(new ApiProviderException(SearchApiProvider.KAKAO));
+        })
+        .onStatus(HttpStatus::is5xxServerError, clientResponse -> {
+          log.error("KakaoSearchDao::searchByKeyword 5xx error - keyword : {}", keyword);
+          return Mono.error(new ApiProviderException(SearchApiProvider.KAKAO));
+        })
+        .bodyToMono(KakaoSearchResponse.class)
+        ;
   }
 }

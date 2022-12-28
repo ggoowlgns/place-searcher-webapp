@@ -1,15 +1,19 @@
 package com.jhpark.psearcher.dao;
 
+import com.jhpark.psearcher.domain.enumerator.SearchApiProvider;
+import com.jhpark.psearcher.domain.exception.ApiProviderException;
 import com.jhpark.psearcher.domain.response.NaverSearchResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Repository
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Slf4j
 public class NaverSearchDao implements SearchDao{
   @Qualifier("naverWebClient")
   private final WebClient naverWebClient;
@@ -26,6 +30,15 @@ public class NaverSearchDao implements SearchDao{
             build())
         .header("X-Naver-Client-Id", naverRestClientId)
         .header("X-Naver-Client-Secret", naverRestClientSecret)
-        .retrieve().bodyToMono(NaverSearchResponse.class);
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
+          log.error("NaverSearchDao::searchByKeyword 4xx error - keyword : {}", keyword);
+          return Mono.error(new ApiProviderException(SearchApiProvider.NAVER));
+        })
+        .onStatus(HttpStatus::is5xxServerError, clientResponse -> {
+          log.error("NaverSearchDao::searchByKeyword 5xx error - keyword : {}", keyword);
+          return Mono.error(new ApiProviderException(SearchApiProvider.NAVER));
+        })
+        .bodyToMono(NaverSearchResponse.class);
   }
 }
