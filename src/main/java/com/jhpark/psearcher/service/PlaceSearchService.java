@@ -42,13 +42,10 @@ public class PlaceSearchService {
   private final NaverSearchDao naverSearchDao;
 
   public Mono<List<Place>> searchPlaceByKeyword(String keyword) {
-    for (SearchApiProvider apiProvider : SearchApiProvider.values()) {
-      log.info("apiProvider : {}", apiProvider);
-    }
     return kakaoSearchDao.searchByKeyword(keyword).
         map(this::convertKakaoResponseToPlace).
-        flatMap(candidateKakaoPlaces -> {
-          return naverSearchDao.searchByKeyword(keyword)
+        flatMap(candidateKakaoPlaces ->
+          naverSearchDao.searchByKeyword(keyword)
               .map(this::convertNaverResponseToPlace)
               .map(naverPlaces -> {
                 log.info("PlaceSearchService::searchPlaceByKeyword- candidateKakaoPlaces : {}", candidateKakaoPlaces);
@@ -56,8 +53,8 @@ public class PlaceSearchService {
 
                 List<Place> result = makeResultByAggregatingAndSorting(naverPlaces, candidateKakaoPlaces);
                 return result;
-              });
-        });
+              })
+        );
   }
 
 

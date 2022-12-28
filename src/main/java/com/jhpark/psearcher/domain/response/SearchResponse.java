@@ -1,4 +1,4 @@
 package com.jhpark.psearcher.domain.response;
 
-public class SearchResponse {
+public abstract class SearchResponse {
 }
