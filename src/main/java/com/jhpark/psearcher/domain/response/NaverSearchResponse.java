@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 @Builder
 @NoArgsConstructor
@@ -16,7 +17,8 @@ public class NaverSearchResponse extends SearchResponse{
   private Integer start;
   private Integer display;
   private Timestamp lastBuildDate;
-  private List<Item> items;
+  @Builder.Default
+  private List<Item> items = new ArrayList<>();
 
   @Data
   @Builder

@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @Repository
 @RequiredArgsConstructor @Slf4j
@@ -39,6 +42,8 @@ public class NaverSearchDao implements SearchDao{
           log.error("NaverSearchDao::searchByKeyword 5xx error - keyword : {}", keyword);
           return Mono.error(new ApiProviderException(SearchApiProvider.NAVER));
         })
-        .bodyToMono(NaverSearchResponse.class);
+        .bodyToMono(NaverSearchResponse.class)
+        .retryWhen(Retry.backoff(3, Duration.ofMillis(300)))
+        .onErrorReturn(NaverSearchResponse.builder().build());
   }
 }

@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum SearchApiProvider {
   KAKAO("kakao"),
-  NAVER("naver");
+  NAVER("naver"),
+  EVERY_PROVIDER("every provider");
 
   public String value;
 }

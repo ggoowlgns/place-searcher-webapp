@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 @Builder
 @NoArgsConstructor
@@ -12,7 +13,8 @@ import java.util.List;
 @Data //https://developers.kakao.com/docs/latest/ko/local/dev-guide#search-by-keyword-response
 public class KakaoSearchResponse extends SearchResponse{
   private Meta meta;
-  private List<Document> documents;
+  @Builder.Default
+  private List<Document> documents = new ArrayList<>();
 
   @Data
   static class Meta {

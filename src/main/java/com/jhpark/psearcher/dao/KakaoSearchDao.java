@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @RequiredArgsConstructor @Slf4j
 @Repository
@@ -41,6 +44,8 @@ public class KakaoSearchDao implements SearchDao{
           return Mono.error(new ApiProviderException(SearchApiProvider.KAKAO));
         })
         .bodyToMono(KakaoSearchResponse.class)
-        ;
+        .retryWhen(Retry.backoff(3, Duration.ofMillis(300)))
+        .onErrorReturn(KakaoSearchResponse.builder().build());
+
   }
 }

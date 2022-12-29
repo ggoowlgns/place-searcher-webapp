@@ -27,8 +27,10 @@ class PlaceSearchServiceTest {
   @MockBean
   NaverSearchDao naverSearchDao;
 
-  @BeforeEach
-  void setUp() {
+  @Autowired
+  PlaceSearchService placeSearchService;
+  @Test
+  void searchPlaceTestByBank() {
     List<KakaoSearchResponse.Document> mockDocuments = new ArrayList<>();
     mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("카카오뱅크").x("123").y("123").build());
     mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("우리은행").x("123").y("123").build());
@@ -42,20 +44,36 @@ class PlaceSearchServiceTest {
     mockItems.add(NaverSearchResponse.Item.builder().title("하나은행").mapx("123").mapy("123").build());
     mockItems.add(NaverSearchResponse.Item.builder().title("국민은행").mapx("123").mapy("123").build());
     mockItems.add(NaverSearchResponse.Item.builder().title("기업은행").mapx("123").mapy("123").build());
+    mockWebClients(mockDocuments, mockItems);
+    List<String> places = placeSearchService.searchPlaceByKeyword("test").block().stream()
+        .map(place -> place.name).collect(Collectors.toList());
+    log.info("places : {}", places);
+  }
 
+  @Test
+  void searchPlaceTestByGobChang() {
+    List<KakaoSearchResponse.Document> mockDocuments = new ArrayList<>();
+    mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("A곱창").x("123").y("123").build());
+    mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("B곱창").x("123").y("123").build());
+    mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("C곱창").x("123").y("123").build());
+    mockDocuments.add(KakaoSearchResponse.Document.builder().place_name("D곱창").x("123").y("123").build());
+
+    List<NaverSearchResponse.Item> mockItems = new ArrayList<>();
+    mockItems.add(NaverSearchResponse.Item.builder().title("A곱창").mapx("123").mapy("123").build());
+    mockItems.add(NaverSearchResponse.Item.builder().title("E곱창").mapx("123").mapy("123").build());
+    mockItems.add(NaverSearchResponse.Item.builder().title("D곱창").mapx("123").mapy("123").build());
+    mockItems.add(NaverSearchResponse.Item.builder().title("C곱창").mapx("123").mapy("123").build());
+    mockWebClients(mockDocuments, mockItems);
+    List<String> places = placeSearchService.searchPlaceByKeyword("test").block().stream()
+        .map(place -> place.name).collect(Collectors.toList());
+    log.info("places : {}", places);
+  }
+
+  private void mockWebClients(List<KakaoSearchResponse.Document> mockDocuments, List<NaverSearchResponse.Item> mockItems) {
     when(kakaoSearchDao.searchByKeyword(anyString()))
         .thenReturn(Mono.just(KakaoSearchResponse.builder().documents(mockDocuments).build()));
     when(naverSearchDao.searchByKeyword(anyString()))
         .thenReturn(Mono.just(NaverSearchResponse.builder().items(mockItems).build()));
   }
 
-
-  @Autowired
-  PlaceSearchService placeSearchService;
-  @Test
-  void searchPlaceByKeyword() {
-    List<String> places = placeSearchService.searchPlaceByKeyword("test").block().stream()
-        .map(place -> place.name).collect(Collectors.toList());
-    log.info("places : {}", places);
-  }
 }
