@@ -5,4 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface SearchDao {
   Mono<? extends SearchResponse> searchByKeyword(String keyword);
+  SearchResponse makeExceptionRespnse();
 }

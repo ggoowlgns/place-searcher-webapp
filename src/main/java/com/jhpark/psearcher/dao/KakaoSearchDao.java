@@ -45,7 +45,13 @@ public class KakaoSearchDao implements SearchDao{
         })
         .bodyToMono(KakaoSearchResponse.class)
         .retryWhen(Retry.backoff(3, Duration.ofMillis(300)))
-        .onErrorReturn(KakaoSearchResponse.builder().build());
+        .onErrorReturn(makeExceptionRespnse());
+  }
 
+  @Override
+  public KakaoSearchResponse makeExceptionRespnse() {
+    KakaoSearchResponse exceptionResponse = KakaoSearchResponse.builder().build();
+    exceptionResponse.setIsErrorOccured(true);
+    return exceptionResponse;
   }
 }

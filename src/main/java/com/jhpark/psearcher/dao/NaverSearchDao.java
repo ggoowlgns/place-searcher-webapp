@@ -44,6 +44,14 @@ public class NaverSearchDao implements SearchDao{
         })
         .bodyToMono(NaverSearchResponse.class)
         .retryWhen(Retry.backoff(3, Duration.ofMillis(300)))
-        .onErrorReturn(NaverSearchResponse.builder().build());
+        .onErrorReturn(makeExceptionRespnse());
   }
+
+  @Override
+  public NaverSearchResponse makeExceptionRespnse() {
+    NaverSearchResponse exceptionResponse = NaverSearchResponse.builder().build();
+    exceptionResponse.setIsErrorOccured(true);
+    return exceptionResponse;
+  }
+
 }

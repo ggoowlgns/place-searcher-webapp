@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -45,42 +44,48 @@ public class PlaceSearchService {
   private final NaverSearchDao naverSearchDao;
 
   public Mono<List<Place>> searchPlaceByKeyword(String keyword) {
-    Mono<List<Place>> kakaoPlacesMono = kakaoSearchDao.searchByKeyword(keyword).map(this::convertKakaoResponseToPlace);
-    Mono<List<Place>> naverPlacesMono = naverSearchDao.searchByKeyword(keyword).map(this::convertNaverResponseToPlace);
-    return Mono.zip(kakaoPlacesMono, naverPlacesMono,
-        (kPlaces, nPlaces) -> PlacesZip.builder().kakaoPalces(kPlaces).naverPalces(nPlaces).build())
-        .doOnNext(placesZip -> {
-          log.info("PlaceSearchService::searchPlaceByKeyword- kakaoPalces : {}", placesZip.kakaoPalces);
-          log.info("PlaceSearchService::searchPlaceByKeyword- naverPalces : {}", placesZip.naverPalces);
+    Mono<KakaoSearchResponse> kakaoSearchResponseMono = kakaoSearchDao.searchByKeyword(keyword);
+    Mono<NaverSearchResponse> naverSearchResponseMono = naverSearchDao.searchByKeyword(keyword);
+    return Mono.zip(kakaoSearchResponseMono, naverSearchResponseMono,
+              (kakaoSearchResponse, naverSearchResponse) ->
+                  SearchResponseZip.builder()
+                      .kakaoSearchResponse(kakaoSearchResponse)
+                      .naverSearchResponse(naverSearchResponse)
+                      .build())
+        .doOnNext(searchResponseZip -> {
+          log.info("PlaceSearchService::searchPlaceByKeyword- kakaoPalces : {}", searchResponseZip.kakaoSearchResponse);
+          log.info("PlaceSearchService::searchPlaceByKeyword- naverPalces : {}", searchResponseZip.naverSearchResponse);
         })
-        .map(this::makeResultByAggregatingAndSorting);
+        .doOnNext(searchResponseZip -> {
+          if (searchResponseZip.kakaoSearchResponse.isErrorOccured && searchResponseZip.naverSearchResponse.isErrorOccured)
+            throw new ApiProviderException(SearchApiProvider.EVERY_PROVIDER);
+        })
+        .map(searchResponseZip -> makeResultByAggregatingAndSorting(convertNaverResponseToPlace(searchResponseZip.naverSearchResponse),
+                                                      convertKakaoResponseToPlace(searchResponseZip.kakaoSearchResponse)));
   }
 
   @Builder
-  static class PlacesZip {
-    List<Place> kakaoPalces;
-    List<Place> naverPalces;
+  static class SearchResponseZip {
+    KakaoSearchResponse kakaoSearchResponse;
+    NaverSearchResponse naverSearchResponse;
   }
-
-  private List<Place> makeResultByAggregatingAndSorting(PlacesZip placesZip) {
-    if (CollectionUtils.isEmpty(placesZip.kakaoPalces)
-        && CollectionUtils.isEmpty(placesZip.naverPalces)) throw new ApiProviderException(SearchApiProvider.EVERY_PROVIDER);
-    int requiredElementNumberFromKakao = 10 - placesZip.naverPalces.size();
-    List<Place> kakaoPlacesToUse = placesZip.kakaoPalces.size() > requiredElementNumberFromKakao ?
-        placesZip.kakaoPalces.subList(0, requiredElementNumberFromKakao) : placesZip.kakaoPalces;
+  private List<Place> makeResultByAggregatingAndSorting(List<Place> naverPlaces, List<Place> candidateKakaoPlaces) {
+    int requiredElementNumberFromKakao = 10 - naverPlaces.size();
+    List<Place> kakaoPlacesToUse = candidateKakaoPlaces.size() > requiredElementNumberFromKakao ?
+        candidateKakaoPlaces.subList(0, requiredElementNumberFromKakao) : candidateKakaoPlaces;
 
     List<Place> result = kakaoPlacesToUse.stream()
-                          .distinct()
-                          .sorted((o1, o2) -> {
-                            boolean o1ExistInNaver = placesZip.naverPalces.contains(o1);
-                            boolean o2ExistInNaver = placesZip.naverPalces.contains(o2);
-                            if (o1ExistInNaver && !o2ExistInNaver) return -1;
-                            else if (!o1ExistInNaver && o2ExistInNaver) return 1;
-                            else return 0;
-                          }).collect(Collectors.toList());
+        .distinct()
+        .sorted((o1, o2) -> {
+          boolean o1ExistInNaver = naverPlaces.contains(o1);
+          boolean o2ExistInNaver = naverPlaces.contains(o2);
+          if (o1ExistInNaver && !o2ExistInNaver) return -1;
+          else if (!o1ExistInNaver && o2ExistInNaver) return 1;
+          else return 0;
+        }).collect(Collectors.toList());
 
     List<Place> naverResult = new ArrayList<>();
-    for (Place naverPlace : placesZip.naverPalces) {
+    for (Place naverPlace : naverPlaces) {
       if (!result.contains(naverPlace)) naverResult.add(naverPlace);
     }
     result.addAll(naverResult);
